@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birthday Countdown 🎉</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        @keyframes confetti {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        @keyframes rainbow {
+            0% { color: #ff0000; }
+            16% { color: #ff8000; }
+            33% { color: #ffff00; }
+            50% { color: #00ff00; }
+            66% { color: #0080ff; }
+            83% { color: #8000ff; }
+            100% { color: #ff0000; }
+        }
+        .bounce { animation: bounce 2s infinite; }
+        .pulse { animation: pulse 2s infinite; }
+        .confetti { animation: confetti 3s ease-out forwards; }
+        .rainbow { animation: rainbow 3s infinite; }
+        .gradient-bg {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientShift 8s ease infinite;
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+    </style>
+</head>
+<body class="min-h-screen gradient-bg text-white font-bold">
+    <div class="container mx-auto px-4 py-8 min-h-screen flex flex-col items-center justify-center">
+        
+        <!-- Birthday Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-6xl md:text-8xl font-black mb-4 bounce rainbow">🎂 BIRTHDAY 🎂</h1>
+            <h2 class="text-3xl md:text-5xl font-bold mb-2">COUNTDOWN</h2>
+            <p class="text-xl md:text-2xl opacity-90">August 27th • Born in 2010</p>
+        </div>
+
+        <!-- Countdown Timer -->
+        <div id="countdown-container" class="bg-black/30 backdrop-blur-lg rounded-3xl p-8 md:p-12 mb-12 shadow-2xl">
+            <div id="countdown" class="grid grid-cols-4 gap-6 md:gap-12 text-center">
+                <div class="flex flex-col items-center">
+                    <div id="days" class="text-4xl md:text-6xl font-black pulse bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">0</div>
+                    <div class="text-lg md:text-xl font-semibold mt-2">DAYS</div>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div id="hours" class="text-4xl md:text-6xl font-black pulse bg-gradient-to-r from-blue-500 to-cyan-600 bg-clip-text text-transparent">0</div>
+                    <div class="text-lg md:text-xl font-semibold mt-2">HOURS</div>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div id="minutes" class="text-4xl md:text-6xl font-black pulse bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent">0</div>
+                    <div class="text-lg md:text-xl font-semibold mt-2">MINUTES</div>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div id="seconds" class="text-4xl md:text-6xl font-black pulse bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">0</div>
+                    <div class="text-lg md:text-xl font-semibold mt-2">SECONDS</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Age Display -->
+        <div class="text-center mb-8">
+            <p class="text-2xl md:text-3xl mb-2">You're turning</p>
+            <div id="age" class="text-5xl md:text-7xl font-black bounce bg-gradient-to-r from-yellow-400 to-pink-600 bg-clip-text text-transparent">15</div>
+            <p class="text-xl md:text-2xl mt-2">years old! 🎈</p>
+        </div>
+
+        <!-- Birthday Message -->
+        <div id="birthday-message" class="hidden text-center">
+            <h1 class="text-6xl md:text-8xl font-black mb-8 rainbow">🎉 HAPPY BIRTHDAY! 🎉</h1>
+            <p class="text-3xl md:text-4xl font-bold mb-6">Hope your special day is amazing!</p>
+            <div class="text-6xl md:text-8xl bounce">🎂🎈🎁🎊</div>
+            <p class="text-2xl md:text-3xl mt-6 bg-gradient-to-r from-yellow-400 to-pink-600 bg-clip-text text-transparent font-black">
+                You are now <span id="current-age">15</span> years old! 🎉
+            </p>
+        </div>
+
+        <!-- Confetti Container -->
+        <div id="confetti-container" class="fixed inset-0 pointer-events-none hidden"></div>
+
+    </div>
+
+    <script>
+        const birthYear = 2010;
+        const birthMonth = 7; // August (0-indexed)
+        const birthDate = 27;
+        
+        let confettiInterval;
+        
+        function getCurrentAge() {
+            const today = new Date();
+            const currentYear = today.getFullYear();
+            const currentMonth = today.getMonth();
+            const currentDate = today.getDate();
+            
+            let age = currentYear - birthYear;
+            
+            // If birthday hasn't occurred this year yet, subtract 1
+            if (currentMonth < birthMonth || (currentMonth === birthMonth && currentDate < birthDate)) {
+                age--;
+            }
+            
+            return age;
+        }
+        
+        function getNextBirthdayAge() {
+            return getCurrentAge() + 1;
+        }
+        
+        function getNextBirthday() {
+            const today = new Date();
+            let nextBirthday = new Date(today.getFullYear(), birthMonth, birthDate);
+            
+            // If birthday has passed this year, set to next year
+            if (today > nextBirthday) {
+                nextBirthday = new Date(today.getFullYear() + 1, birthMonth, birthDate);
+            }
+            
+            return nextBirthday;
+        }
+
+        function createConfetti() {
+            const confettiContainer = document.getElementById('confetti-container');
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffa500', '#800080'];
+            
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.position = 'absolute';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.top = '-10px';
+                confetti.style.width = '10px';
+                confetti.style.height = '10px';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.borderRadius = '50%';
+                confetti.classList.add('confetti');
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                confettiContainer.appendChild(confetti);
+                
+                // Remove confetti after animation
+                setTimeout(() => {
+                    if (confetti.parentNode) {
+                        confetti.parentNode.removeChild(confetti);
+                    }
+                }, 3000);
+            }
+        }
+
+        function updateCountdown() {
+            const now = new Date();
+            const nextBirthday = getNextBirthday();
+            const timeLeft = nextBirthday - now;
+            
+            // Check if it's birthday (within the birthday day)
+            const isBirthday = now.getMonth() === birthMonth && now.getDate() === birthDate;
+            
+            // Update the age display for the upcoming birthday
+            const nextAge = getNextBirthdayAge();
+            document.getElementById('age').textContent = nextAge;
+            
+            if (isBirthday) {
+                // Update current age in birthday message
+                const currentAge = getCurrentAge();
+                document.getElementById('current-age').textContent = currentAge;
+                
+                // Show birthday message and hide countdown
+                document.getElementById('countdown-container').classList.add('hidden');
+                document.getElementById('birthday-message').classList.remove('hidden');
+                document.getElementById('confetti-container').classList.remove('hidden');
+                
+                // Start confetti if not already started
+                if (!confettiInterval) {
+                    createConfetti();
+                    confettiInterval = setInterval(createConfetti, 2000);
+                }
+                
+                return;
+            } else {
+                // Hide birthday message and show countdown if not birthday
+                document.getElementById('countdown-container').classList.remove('hidden');
+                document.getElementById('birthday-message').classList.add('hidden');
+                document.getElementById('confetti-container').classList.add('hidden');
+                
+                // Clear confetti interval if it exists
+                if (confettiInterval) {
+                    clearInterval(confettiInterval);
+                    confettiInterval = null;
+                }
+            }
+            
+            if (timeLeft > 0) {
+                const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                
+                document.getElementById('days').textContent = days;
+                document.getElementById('hours').textContent = hours;
+                document.getElementById('minutes').textContent = minutes;
+                document.getElementById('seconds').textContent = seconds;
+            }
+        }
+
+        // Update countdown immediately and then every second
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    </script>
+</body>
+</html>
